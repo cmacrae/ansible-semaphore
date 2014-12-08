@@ -1,0 +1,7 @@
+---
+
+- name: restart semaphore
+  service: name=semaphore state=restarted
+
+- name: import semaphore service
+  command: /usr/sbin/svccfg import /opt/local/lib/svc/manifest/semaphore.xml

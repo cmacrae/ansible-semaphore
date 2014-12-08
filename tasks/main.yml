@@ -1,0 +1,88 @@
+---
+
+  - name: Ensure Semaphore service group exists
+    group: name={{ semaphore_group_name }}
+           gid={{ semaphore_group_gid }}
+           state=present
+           
+  - name: Ensure Semaphore service user exists
+    user: name={{ semaphore_user_name }}
+          uid={{ semaphore_user_uid }}
+          group={{ semaphore_group_name }}
+          shell=/usr/bin/bash
+          home={{ semaphore_user_home }}
+          createhome=yes
+          state=present
+
+  - name: Ensure Semaphore service user environment is set up
+    shell: cp /etc/skel/{.bash*,.login,.profile} {{ semaphore_user_home }}/
+    args:
+      creates: "{{ semaphore_user_home }}/.bashrc"
+          
+  - name: Ensure Semaphore dependencies are installed
+    pkgin: name={{ item }} state=present
+    with_items:
+      - ansible
+      - gcc47
+      - gcc47-libs
+      - gmake
+      - mongodb
+      - redis
+
+  - name: Update npm & node libs
+    shell: "{{ item }}"
+    with_items:
+      - /opt/local/bin/npm install -g npm
+      - npm update > /root/.npm_update.log
+    args:
+      creates: "/root/.npm_update.log"
+      
+  - name: Ensure node dependencies are installed
+    npm: name={{ item }} global=yes
+    with_items:
+      - bower
+      - grunt-cli
+
+  - name: Fetch Semaphore from GitHub
+    git: repo=git://github.com/CastawayLabs/semaphore.git
+         dest={{ semaphore_user_home }}/bin update={{ semaphore_follow_git }}
+
+  - name: Ensure Sempahore dependency libs are installed
+    shell: "{{ item }} chdir={{ semaphore_user_home}}/bin"
+    with_items:
+      - bower install --allow-root
+      - npm install
+    args:
+      creates: "{{ semaphore_user_home }}/bin/.bower_install.log"
+
+  - name: Ensure Semaphore credentials are in place
+    template: dest={{ semaphore_user_home }}/bin/lib/credentials.json
+              owner={{ semaphore_user_name}} group={{ semaphore_group_name }}
+              src=credentials.json.j2
+    notify: restart semaphore
+
+  - name: Ensure Sempahore serice user has correct $HOME permissions
+    file: dest={{ semaphore_user_home }}
+          owner={{ semaphore_user_name }}
+          group={{ semaphore_group_name }}
+          recurse=yes state=directory
+
+  - name: Deploy Semaphore service manifest
+    template: dest=/opt/local/lib/svc/manifest/semaphore.xml
+              src=semaphore.smartos_smf_manifest.xml.j2
+              owner=root group=root mode=644
+    notify: import semaphore service
+              
+  - name: Initial import of Semaphore service
+    command: /usr/sbin/svccfg import /opt/local/lib/svc/manifest/semaphore.xml
+    args:
+      creates: "/var/svc/log/application-semaphore:default.log"
+
+  - name: Ensure Redis & MongoDB are running
+    service: name={{ item }} state=started enabled=yes
+    with_items:
+      - mongodb
+      - redis
+
+  - name: Ensure the Semaphore service is running and enabled on boot
+    service: name=semaphore state=started enabled=yes

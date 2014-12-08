@@ -1,0 +1,26 @@
+---
+# Semaphore user/group properties
+semaphore_user_name: semaphore
+semaphore_group_name: semaphore
+semaphore_user_uid: 1000
+semaphore_group_gid: 1000
+semaphore_user_home: /opt/{{ semaphore_user_name }}
+
+# Keep up to date with HEAD @ github.com/CastawayLabs/semaphore ?
+semaphore_follow_git: false
+
+# semaphore credential properties
+semaphore_redis_port: 6379
+semaphore_redis_host: 127.0.0.1
+semaphore_redis_key: ~
+semaphore_use_analytics: "false"
+semaphore_is_ssl: "false"
+semaphore_newrelic_key: ~
+semaphore_bugsnag_key: ~
+semaphore_smtp_user: ~
+semaphore_smtp_pass: ~
+semaphore_mongo_db: "mongodb://127.0.0.1/semaphore"
+semaphore_mongo_auto_reconn: "true"
+semaphore_mongo_native_parser: "true"
+semaphore_mongo_srv_auto_reconn: "true"
+semaphore_port: 3000
