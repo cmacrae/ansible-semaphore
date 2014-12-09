@@ -13,7 +13,7 @@
     <dependent name='semaphore' restart_on='none' grouping='optional_all'>
       <service_fmri value='svc:/milestone/multi-user'/>
     </dependent>
-    <exec_method name='start' type='method' exec='grunt serve' timeout_seconds='60'>
+    <exec_method name='start' type='method' exec='/opt/local/bin/node lib/app.js' timeout_seconds='60'>
       <method_context working_directory='{{ semaphore_user_home }}/bin'>
         <method_credential user='{{ semaphore_user_name }}' group='{{ semaphore_group_name }}'/>
         <method_environment>
