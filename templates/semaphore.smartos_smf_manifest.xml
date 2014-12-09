@@ -10,7 +10,7 @@
    <exec_method
        name='start'
        type='method'
-       exec='grunt serve'
+       exec='/opt/local/bin/node lib/app.js'
        timeout_seconds='60'/>
    <exec_method
        name='stop'

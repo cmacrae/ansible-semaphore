@@ -47,11 +47,12 @@
     git: repo=git://github.com/CastawayLabs/semaphore.git
          dest={{ semaphore_user_home }}/bin update={{ semaphore_follow_git }}
 
-  - name: Ensure Sempahore dependency libs are installed
+  - name: Ensure Sempahore dependency libs are set up
     shell: "{{ item }} chdir={{ semaphore_user_home}}/bin"
     with_items:
       - bower install --allow-root
       - npm install
+      - grunt build
     args:
       creates: "{{ semaphore_user_home }}/bin/.bower_install.log"
 
